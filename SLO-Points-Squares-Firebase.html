@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SLO Points Squares</title>
+<meta name="description" content="Run a football squares points game for fun. No money, wagers, or cash prizes. Firebase keeps every phone synchronized.">
+<meta name="theme-color" content="#EFEDE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101614" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SLO Points">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light dark;
+  --font-display:'Archivo Black','Arial Black','Helvetica Neue',sans-serif;
+  --font-body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+
+  --r-sm:4px; --r-md:10px; --r-lg:18px;
+
+  --bg:#EFEDE6;
+  --surface:#F8F7F3;
+  --surface-2:#E7E4DA;
+  --line:#D2CFC4;
+  --line-strong:#B4AF9F;
+  --ink:#1A1F1D;
+  --ink-2:#5F6863;
+  --ink-3:#8A928C;
+  --accent:#E9A900;
+  --accent-ink:#221900;
+  --accent-text:#7E5A00;
+  --accent-soft:#F7E8BC;
+  --danger:#C43B24;
+  --danger-soft:#F6DCD6;
+  --ok:#2F7D5B;
+  --shadow:0 1px 2px rgba(26,31,29,.08),0 8px 24px rgba(26,31,29,.06);
+  --sheet-shadow:0 -8px 40px rgba(26,31,29,.18);
+  --cell:clamp(24px,7.2vw,54px);
+
+  --tx:#97233F; --tx-ink:#FFF9F0;
+  --ty:#0085CA; --ty-ink:#FFF9F0;
+}
+@media (prefers-color-scheme: dark){
+  html[data-theme="auto"]{
+    --bg:#101614;
+    --surface:#18211F;
+    --surface-2:#212D2A;
+    --line:#2D3D39;
+    --line-strong:#435A54;
+    --ink:#E9EFEC;
+    --ink-2:#A2B2AC;
+    --ink-3:#76867F;
+    --accent:#F2B705;
+    --accent-ink:#0F1412;
+    --accent-text:#F2B705;
+    --accent-soft:#2E2A12;
+    --danger:#F06A50;
+    --danger-soft:#3A1E17;
+    --ok:#5CC391;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.4);
+    --sheet-shadow:0 -8px 40px rgba(0,0,0,.6);
+  }
+}
+html[data-theme="dark"]{
+  --bg:#101614;
+  --surface:#18211F;
+  --surface-2:#212D2A;
+  --line:#2D3D39;
+  --line-strong:#435A54;
+  --ink:#E9EFEC;
+  --ink-2:#A2B2AC;
+  --ink-3:#76867F;
+  --accent:#F2B705;
+  --accent-ink:#0F1412;
+  --accent-text:#F2B705;
+  --accent-soft:#2E2A12;
+  --danger:#F06A50;
+  --danger-soft:#3A1E17;
+  --ok:#5CC391;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.4);
+  --sheet-shadow:0 -8px 40px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  min-height:100dvh;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.45;
+  padding-bottom:env(safe-area-inset-bottom);
+  overscroll-behavior-y:none;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-sm)}
+
+.wrap{max-width:760px;margin:0 auto;padding:0 14px 120px}
+
+/* Header */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:var(--bg);
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(150%) blur(12px);
+  border-bottom:none;
+  padding-top:env(safe-area-inset-top);
+}
+.topbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
+  background:linear-gradient(90deg,var(--ty) 0%,var(--ty) 46%,var(--accent) 50%,var(--tx) 54%,var(--tx) 100%);
+}
+.topbar-in{max-width:760px;margin:0 auto;padding:9px 14px;display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:7px;font-family:var(--font-display);font-size:15px;letter-spacing:-.02em;text-transform:uppercase}
+.brand .sq{
+  width:26px;height:26px;border-radius:var(--r-sm);
+  background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;font-size:9.5px;letter-spacing:0;
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);
+}
+.spacer{flex:1}
+.iconbtn{
+  min-height:34px;padding:0 11px;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);font-size:12.5px;font-weight:600;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.iconbtn:hover{border-color:var(--line-strong);color:var(--ink)}
+.iconbtn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* Matchup strip */
+.matchup{display:flex;align-items:stretch;gap:8px;margin:14px 0 10px}
+.team{
+  flex:1;min-width:0;background:var(--tc);color:var(--tci);
+  border:none;border-radius:var(--r-md);padding:10px 11px;position:relative;overflow:hidden;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.22), var(--shadow);
+  display:flex;align-items:center;gap:9px;
+}
+.tmeta{min-width:0;flex:1}
+.tlogo{width:34px;height:34px;object-fit:contain;flex:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
+.picklogo{width:26px;height:26px;object-fit:contain;vertical-align:-7px;margin-right:7px}
+.iconbtn.theme{gap:6px;font-size:12px}
+.iconbtn.theme span:first-child{font-size:13px;line-height:1}
+@media (max-width:379px){ .brand .word{display:none} }
+.team .axis{font-family:var(--font-mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;opacity:.72}
+.team .nm{font-family:var(--font-display);font-size:16px;line-height:1.15;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.team .sc{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--font-display);font-size:26px;opacity:.28;letter-spacing:-.04em}
+.vs{align-self:center;font-family:var(--font-display);font-size:12px;color:var(--ink-3);letter-spacing:.02em}
+
+/* Sold bar */
+.progress{position:relative;height:26px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-bottom:11px;border:1px solid var(--line)}
+.progress .bar{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--ty),var(--tx));transition:width .5s cubic-bezier(.3,1,.4,1)}
+.progress .lb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink);mix-blend-mode:normal}
+.progress .lb b{font-family:var(--font-display);font-size:13px}
+
+/* Info row */
+.inforow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{
+  font-family:var(--font-mono);font-size:11.5px;font-weight:500;
+  border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;color:var(--ink-2);
+}
+.chip b{color:var(--ink);font-weight:600}
+.chip.live{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text)}
+.chip.warn{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.chip.pot{border-color:var(--ok);color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+
+/* Board */
+.boardcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 12px 14px;box-shadow:var(--shadow)}
+.boardhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+.boardhead h2{font-family:var(--font-display);font-size:13px;letter-spacing:.02em;text-transform:uppercase;margin:0}
+.boardscroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;margin:0 -2px;padding:0 2px}
+.grid{
+  display:grid;
+  gap:3px;
+  width:100%;
+  margin:0 auto;
+  transition:opacity .18s ease;
+}
+.grid.settling{opacity:0}
+.boardscroll.zoomed .grid{width:auto;min-width:var(--zoomw,100%)}
+.grid.c10 .sq{font-size:clamp(8px,2.6vw,15px)}
+.grid.c10 .gcell.axis{font-size:clamp(11px,3.4vw,20px)}
+.grid.c10 .gcell.axis.multi{font-size:clamp(8px,2.4vw,14px)}
+.grid.c5 .sq{font-size:clamp(13px,5vw,30px)}
+.grid.c5 .gcell.axis{font-size:clamp(16px,6vw,34px)}
+.grid.c5 .gcell.axis.multi{font-size:clamp(12px,4.2vw,24px)}
+.gcell{
+  aspect-ratio:1;border-radius:clamp(4px,1.1vw,9px);position:relative;min-width:0;
+  display:grid;place-items:center;font-family:var(--font-mono);
+  background:var(--surface-2);border:1px solid transparent;color:var(--ink-3);
+  transition:transform .16s cubic-bezier(.3,1,.4,1), background .22s ease, box-shadow .22s ease, color .22s ease;
+}
+.gcell.corner{background:transparent}
+.gcell.axis{
+  background:transparent;font-weight:700;
+  border:2px dashed var(--ax,var(--line));
+  color:var(--ax,var(--ink-3));
+}
+.gcell.axis.set{
+  border:none;background:var(--ax);color:var(--axi);
+  font-family:var(--font-display);letter-spacing:-.03em;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.24);
+}
+.gcell.axis.multi{letter-spacing:-.06em}
+.gcell.axis.set.multi{word-spacing:-1px}
+.gcell.axis.rolling{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);border-style:solid}
+.gcell.axis.pop{animation:pop .34s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+
+.sq{
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--ink-3);overflow:hidden;
+}
+.sq:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+.sq.taken{
+  background:var(--pc);border-color:transparent;
+  color:var(--pi);font-weight:700;
+  font-family:var(--font-display);font-size:clamp(7.5px,2.2vw,11px);
+  letter-spacing:-.03em;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.26);
+}
+.sq.pending{
+  background:repeating-linear-gradient(135deg,var(--pc),var(--pc) 4px,rgba(0,0,0,.22) 4px,rgba(0,0,0,.22) 8px);
+  border:2px dashed var(--surface);color:var(--pi);font-weight:700;
+}
+.sq.unpaid{box-shadow:inset 0 0 0 3px var(--surface), inset 0 -3px 0 rgba(0,0,0,.26)}
+.sq.mine{outline:2px solid var(--ink);outline-offset:-3px}
+.sq.win{
+  border-color:transparent;z-index:3;
+  box-shadow:0 0 0 3px var(--accent), inset 0 -3px 0 rgba(0,0,0,.26);
+  animation:winpulse 1.9s ease-in-out infinite;
+}
+.sq.fresh{animation:landed .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes winpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+@keyframes landed{0%{transform:scale(.4) rotate(-14deg);opacity:.2}70%{transform:scale(1.16) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+.sq .tag{
+  position:absolute;top:-1px;right:-1px;background:var(--accent);color:var(--accent-ink);
+  font-family:var(--font-mono);font-size:8px;font-weight:600;line-height:1;
+  padding:2px 3px;border-radius:0 var(--r-sm) 0 var(--r-sm);
+}
+.sq .tag.rev{background:var(--ink);color:var(--surface)}
+.sq:active{transform:scale(.94)}
+.axislabel{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;align-items:center;gap:6px;
+}
+.axislabel .dashline{flex:1;height:1px;background:var(--line)}
+.rowlabel{writing-mode:vertical-rl;transform:rotate(180deg)}
+
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.lg{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-2);background:var(--surface-2);border-radius:999px;padding:3px 9px 3px 4px}
+.lg .sw{width:16px;height:16px;border-radius:var(--r-sm);background:var(--c);flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.24)}
+.lg b{color:var(--ink);font-weight:600;font-family:var(--font-mono);font-size:11px}
+
+/* Sections */
+section{margin-top:18px}
+.sechead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 9px}
+.sechead h2{font-family:var(--font-display);font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;margin:0;color:var(--ink);display:flex;align-items:center;gap:7px}
+.sechead h2::before{content:"";width:9px;height:16px;border-radius:2px;background:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:13px;box-shadow:var(--shadow)}
+.card + .card{margin-top:9px}
+
+/* Payout rows */
+.prow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:none;padding-bottom:0}
+.prow:first-child{padding-top:0}
+.prow .lbl{font-weight:600;font-size:14px}
+.prow .amt{font-family:var(--font-mono);font-size:15px;font-weight:600;text-align:right;white-space:nowrap}
+.scorepills{display:flex;gap:5px;align-items:center}
+.pill{
+  font-family:var(--font-display);font-size:15px;letter-spacing:-.02em;
+  padding:3px 10px;border-radius:var(--r-sm);background:var(--c);color:var(--ci);
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.24);min-width:44px;text-align:center;
+}
+.pill.blank{background:var(--surface-2);color:var(--ink-3);box-shadow:none;font-family:var(--font-mono);font-size:11px}
+.prow .sub{grid-column:1/-1;font-size:12.5px;color:var(--ink-2);margin-top:-2px}
+.prow .sub b{color:var(--ink);font-weight:600}
+.prow.hit{background:var(--accent-soft);margin:0 -13px;padding:9px 13px;border-radius:var(--r-md);border-bottom-color:transparent}
+.prow.hit .lbl{color:var(--accent-text)}
+
+/* Roster */
+.rrow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:none}
+.rrow .dot{
+  width:30px;height:24px;border-radius:var(--r-sm);background:var(--pc);color:var(--pi);flex:none;
+  display:grid;place-items:center;font-family:var(--font-display);font-size:9.5px;letter-spacing:-.02em;
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.24);
+}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:95;overflow:hidden}
+#confetti i{position:absolute;top:-14px;width:8px;height:13px;border-radius:1px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(104vh) rotate(760deg);opacity:.15}}
+.rrow .nm{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .ct{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-2)}
+.rrow .owe{font-family:var(--font-mono);font-size:13px;font-weight:600;min-width:62px;text-align:right}
+.rrow .owe.clear{color:var(--ok)}
+
+.empty{text-align:left;padding:22px 4px;color:var(--ink-2);font-size:14px}
+.empty strong{display:block;font-family:var(--font-display);font-size:16px;color:var(--ink);margin-bottom:5px;letter-spacing:-.01em}
+
+/* Buttons */
+.btn{
+  min-height:44px;padding:0 16px;border-radius:var(--r-md);font-weight:600;font-size:14.5px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--surface-2);color:var(--ink);border:1px solid var(--line);
+}
+.btn:hover{border-color:var(--line-strong)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:inset 0 -3px 0 rgba(0,0,0,.24)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+.btn.full{width:100%}
+.btn.sm{min-height:34px;font-size:13px;padding:0 11px;border-radius:var(--r-sm)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btnrow .btn{flex:1;min-width:120px}
+
+/* Fields */
+.field{margin-bottom:11px}
+.field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
+.field input,.field select,.field textarea{
+  width:100%;min-height:44px;padding:10px 12px;border-radius:var(--r-md);
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);
+}
+.field textarea{min-height:88px;resize:vertical;line-height:1.5}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);outline:none}
+.field .hint{font-size:12px;color:var(--ink-3);margin-top:5px;line-height:1.4}
+.field.err input{border-color:var(--danger)}
+.field .errmsg{font-size:12.5px;color:var(--danger);margin-top:5px;display:none}
+.field.err .errmsg{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+input[type="color"]{padding:3px;height:44px}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,14,13,.5);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;
+  background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;
+  box-shadow:var(--sheet-shadow);border-top:1px solid var(--line);
+  transform:translateY(102%);transition:transform .26s cubic-bezier(.3,1,.4,1);
+  max-height:88dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 16px calc(18px + env(safe-area-inset-bottom));
+}
+.sheet.open{transform:translateY(0)}
+@media(min-width:700px){
+  .sheet{left:50%;right:auto;bottom:auto;top:50%;width:min(560px,92vw);border-radius:var(--r-lg);
+    transform:translate(-50%,-46%) scale(.97);opacity:0;transition:transform .2s ease,opacity .2s ease;max-height:86dvh}
+  .sheet.open{transform:translate(-50%,-50%) scale(1);opacity:1}
+}
+.grab{width:38px;height:4px;border-radius:99px;background:var(--line-strong);margin:9px auto 4px}
+.sheethead{position:sticky;top:0;background:var(--surface);padding:6px 50px 12px 0;z-index:2}
+.sheethead h3{font-family:var(--font-display);font-size:18px;margin:0;letter-spacing:-.02em}
+.sheethead p{margin:3px 0 0;font-size:13px;color:var(--ink-2)}
+.closebtn{position:sticky;top:12px;z-index:4;width:32px;height:32px;margin-left:auto;margin-right:0;margin-bottom:-32px;border-radius:50%;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center;font-size:16px}
+
+.pickgrid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.pick{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:600;min-height:38px}
+.pick.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.sqpreview{
+  display:flex;align-items:center;gap:12px;background:var(--surface-2);
+  border-radius:var(--r-md);padding:11px 13px;margin-bottom:14px;
+}
+.sqpreview .box{width:46px;height:46px;border-radius:var(--r-sm);border:2px solid var(--line-strong);display:grid;place-items:center;font-family:var(--font-mono);font-size:13px;font-weight:600;flex:none;background:var(--surface)}
+.sqpreview .meta{font-size:13px;color:var(--ink-2);line-height:1.4}
+.sqpreview .meta b{display:block;color:var(--ink);font-size:14.5px;font-family:var(--font-display);letter-spacing:-.01em}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,140%);
+  z-index:90;background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:999px;
+  font-size:13.5px;font-weight:600;box-shadow:var(--shadow);transition:transform .28s cubic-bezier(.3,1,.4,1);
+  max-width:min(90vw,420px);text-align:center;
+}
+.toast.show{transform:translate(-50%,0)}
+.toast.bad{background:var(--danger);color:#FFF8F6}
+
+.reqrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.reqrow:last-child{border-bottom:none}
+.reqrow .info{flex:1;min-width:0}
+.reqrow .info b{display:block;font-size:14px}
+.reqrow .info span{font-size:12px;color:var(--ink-2);font-family:var(--font-mono)}
+
+.note{font-size:12.5px;color:var(--ink-2);line-height:1.5;background:var(--surface-2);border-radius:var(--r-md);padding:10px 12px;margin-top:10px}
+.note b{color:var(--ink)}
+.rules{white-space:pre-wrap;font-size:14px;line-height:1.55}
+.tabs{display:flex;gap:4px;background:var(--surface-2);padding:3px;border-radius:var(--r-md);margin-bottom:13px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;padding-inline:11px;min-height:36px;border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--ink-2);padding:0 2px}
+.gridopt{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  border:1px solid var(--line);background:var(--bg);border-radius:var(--r-md);
+  padding:11px 13px;margin-bottom:7px;min-height:56px;
+}
+.gridopt .gt{font-family:var(--font-display);font-size:14.5px;letter-spacing:-.02em}
+.gridopt .gs{flex:1;font-size:12px;color:var(--ink-2);line-height:1.3}
+.gridopt .gnow{
+  font-family:var(--font-mono);font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;
+  background:var(--surface-2);color:var(--ink-2);
+}
+.gridopt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 -3px 0 rgba(0,0,0,.14)}
+.gridopt.on .gt{color:var(--accent-text)}
+.gridopt.on .gnow{background:var(--accent);color:var(--accent-ink)}
+.pickrow{display:flex;align-items:center;gap:0}
+.pickrow select{flex:1;min-width:0}
+.swapbox{display:flex;gap:7px}
+.swapside{
+  flex:1;border-radius:var(--r-sm);padding:9px 10px;font-size:12px;font-weight:600;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.22);
+}
+.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.paybtn{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink-2)}
+.paybtn.paid{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+button:disabled,input:disabled,select:disabled,textarea:disabled{opacity:.55;cursor:not-allowed}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><span class="sq">SLO</span><span class="word">Points</span></div>
+    <div class="spacer"></div>
+    <button class="iconbtn theme" id="themeBtn" aria-label="Switch between day and night"><span id="themeIcon">◐</span><span id="themeWord">Auto</span></button>
+    <button class="iconbtn" id="shareBtn">Share</button>
+    <button class="iconbtn" id="adminBtn">Admin</button>
+  </div>
+</div>
+
+<main class="wrap" id="app"></main>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div id="confetti" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+
+
+
+(function(){
+"use strict";
+
+/* ---------------- constants ---------------- */
+var KEY = "slosq.points.v2";
+var LEGACY_KEY = "slosq.v1";
+var IDX = KEY + ".index";
+var PREF = KEY + ".prefs";
+var TRIAL_DAYS = 30;
+var DAY = 86400000;
+var PALETTE = ["#CC3825","#F07A13","#EBA800","#7FA300","#17994F","#009488","#09779E","#2C63D8","#5B4BC4","#8A3FBF","#C42E86","#B5203C"];
+var NFL = [
+  ["ARI","Arizona Cardinals","#97233F","500/ari.png"],["ATL","Atlanta Falcons","#A71930","500/atl.png"],
+  ["BAL","Baltimore Ravens","#241773","500/bal.png"],["BUF","Buffalo Bills","#00338D","500/buf.png"],
+  ["CAR","Carolina Panthers","#0085CA","500-dark/car.png"],["CHI","Chicago Bears","#0B162A","500/chi.png"],
+  ["CIN","Cincinnati Bengals","#FB4F14","500/cin.png"],["CLE","Cleveland Browns","#FF3C00","500/cle.png"],
+  ["DAL","Dallas Cowboys","#002244","500/dal.png"],["DEN","Denver Broncos","#002244","500/den.png"],
+  ["DET","Detroit Lions","#0076B6","500/det.png"],["GB","Green Bay Packers","#203731","500/gb.png"],
+  ["HOU","Houston Texans","#03202F","500/hou.png"],["IND","Indianapolis Colts","#002C5F","500/ind.png"],
+  ["JAX","Jacksonville Jaguars","#006778","500/jax.png"],["KC","Kansas City Chiefs","#E31837","500/kc.png"],
+  ["LV","Las Vegas Raiders","#15171C","500/lv.png"],["LAC","Los Angeles Chargers","#007BC7","500/lac.png"],
+  ["LAR","Los Angeles Rams","#003594","500/lar.png"],["MIA","Miami Dolphins","#008E97","500/mia.png"],
+  ["MIN","Minnesota Vikings","#4F2683","500/min.png"],["NE","New England Patriots","#002244","500/ne.png"],
+  ["NO","New Orleans Saints","#D3BC8D","500/no.png"],["NYG","New York Giants","#0B2265","500/nyg.png"],
+  ["NYJ","New York Jets","#003F2D","500/nyj.png"],["PHI","Philadelphia Eagles","#004C54","500/phi.png"],
+  ["PIT","Pittsburgh Steelers","#15171C","500/pit.png"],["SF","San Francisco 49ers","#AA0000","500/sf.png"],
+  ["SEA","Seattle Seahawks","#002244","500/sea.png"],["TB","Tampa Bay Buccaneers","#A71930","500/tb.png"],
+  ["TEN","Tennessee Titans","#4495D2","500/ten.png"],["WAS","Washington Commanders","#5A1414","500/wsh.png"]
+];
+var PERIODS = [
+  { key:"q1", label:"1st Quarter" },
+  { key:"q2", label:"Halftime" },
+  { key:"q3", label:"3rd Quarter" },
+  { key:"final", label:"Final Score" }
+];
+var GRIDS = [
+  { cols:10, rows:10, total:100, label:"100 squares", sub:"10 by 10, one number a side" },
+  { cols:10, rows:5, total:50, label:"50 squares", sub:"10 across, two numbers down the side" },
+  { cols:5, rows:5, total:25, label:"25 squares", sub:"5 by 5, two numbers every side" }
+];
+var FB_RULES = JSON.stringify({
+  "rules": {
+    "boards": {
+      ".read": false,
+      ".write": false,
+      "$board": {
+        ".read": true,
+        ".write": "auth != null && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('planStatus').val() === 'trial' && newData.child('trialEndsAt').isNumber() && newData.child('trialEndsAt').val() <= now + 2592300000) || (data.exists() && data.child('ownerUid').val() === auth.uid && (data.child('planStatus').val() === 'active' || now < data.child('trialEndsAt').val())))",
+        ".validate": "newData.hasChildren(['id','rev','name','teamX','teamY','cols','rows','mode','status','scores','rewards','trialStartedAt','trialEndsAt','planStatus','ownerUid','allowedCells']) && newData.child('id').val() === $board && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 40 && newData.child('cols').isNumber() && newData.child('rows').isNumber() && (newData.child('mode').val() === 'instant' || newData.child('mode').val() === 'request') && ((newData.child('cols').val() === 10 && newData.child('rows').val() === 10) || (newData.child('cols').val() === 10 && newData.child('rows').val() === 5) || (newData.child('cols').val() === 5 && newData.child('rows').val() === 5)) && (newData.child('status').val() === 'open' || newData.child('status').val() === 'locked' || newData.child('status').val() === 'drawn' || newData.child('status').val() === 'finished') && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('planStatus').val() === 'trial') || (data.exists() && newData.child('ownerUid').val() === data.child('ownerUid').val() && newData.child('trialStartedAt').val() === data.child('trialStartedAt').val() && newData.child('trialEndsAt').val() === data.child('trialEndsAt').val() && newData.child('planStatus').val() === data.child('planStatus').val()))"
+      }
+    },
+    "claims": {
+      ".read": false,
+      ".write": false,
+      "$board": {
+        ".read": true,
+        ".write": "auth != null && root.child('boards').child($board).child('ownerUid').val() === auth.uid && (root.child('boards').child($board).child('planStatus').val() === 'active' || now < root.child('boards').child($board).child('trialEndsAt').val())",
+        "$cell": {
+          ".write": "auth != null && (root.child('boards').child($board).child('ownerUid').val() === auth.uid || (!data.exists() && newData.exists() && newData.child('uid').val() === auth.uid && root.child('boards').child($board).child('allowedCells').child($cell).val() === true && root.child('boards').child($board).child('status').val() === 'open' && (root.child('boards').child($board).child('planStatus').val() === 'active' || now < root.child('boards').child($board).child('trialEndsAt').val()) && ((root.child('boards').child($board).child('mode').val() === 'request' && newData.child('status').val() === 'pending') || (root.child('boards').child($board).child('mode').val() !== 'request' && newData.child('status').val() === 'claimed'))))",
+          ".validate": "!newData.exists() || (newData.hasChildren(['name','status','uid','claimId','at']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 24 && newData.child('uid').isString() && newData.child('uid').val().length > 0 && newData.child('uid').val().length <= 128 && newData.child('claimId').isString() && newData.child('claimId').val().length > 0 && newData.child('claimId').val().length <= 40 && newData.child('at').isNumber() && (newData.child('status').val() === 'claimed' || newData.child('status').val() === 'pending'))",
+          "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24" },
+          "status": { ".validate": "newData.val() === 'claimed' || newData.val() === 'pending'" },
+          "uid": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128" },
+          "claimId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+          "at": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      }
+    }
+  }
+}, null, 2);
+
+/* ---------------- state ---------------- */
+var mem = {};
+var FB = { url:"", key:"" };
+var FBAUTH = null;
+var authPromise = null;
+var etags = {};
+var writeQueue = Promise.resolve();
+var sheetOpen = false;
+var toastTimer;
+var state = {
+  board:null, boardId:null, isAdmin:false, deviceId:null, me:"", index:[],
+  syncErr:"", writing:false, zoom:false, theme:"auto", fresh:null
+};
+
+/* ---------------- helpers ---------------- */
+function el(id){ return document.getElementById(id); }
+function uid(n){
+  var s = "abcdefghijkmnpqrstuvwxyz23456789", o = "";
+  for (var i=0;i<(n||8);i++) o += s[Math.floor(Math.random()*s.length)];
+  return o;
+}
+function esc(t){
+  return String(t == null ? "" : t).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+  });
+}
+function points(n){ return (Number(n)||0).toLocaleString() + " pts"; }
+function logoUrl(suffix){ return suffix ? "https://a.espncdn.com/i/teamlogos/nfl/" + suffix : ""; }
+function logoImg(t, cls){
+  if (!t || !t.logo) return "";
+  return '<img class="' + cls + '" src="' + esc(t.logo) + '" alt="" loading="lazy" onerror="this.remove()">';
+}
+function cols(b){ return (b && b.cols) || 10; }
+function rows(b){ return (b && b.rows) || 10; }
+function totalSquares(b){ return cols(b) * rows(b); }
+function allowedCellsFor(nc,nr){
+  var out={};
+  for(var y=0;y<nr;y++)for(var x=0;x<nc;x++)out[x+","+y]=true;
+  return out;
+}
+function cleanClaim(s){
+  s=s||{};
+  return {
+    name:String(s.name||"").trim().slice(0,24),
+    status:s.status==="pending"?"pending":"claimed",
+    uid:String(s.uid||s.by||("legacy-"+(s.claimId||uid(10)))).slice(0,128),
+    claimId:String(s.claimId||uid(14)).slice(0,40),
+    at:Number(s.at)||now()
+  };
+}
+function cleanClaims(squares,allowed){
+  var out={};allowed=allowed||{};
+  Object.keys(squares||{}).forEach(function(k){if(allowed[k]){var c=cleanClaim(squares[k]);if(c.name)out[k]=c;}});
+  return out;
+}
+function groupText(g){ return Array.isArray(g) ? g.join("") : String(g); }
+function digitIndex(groups, d){
+  for (var i=0;i<groups.length;i++) if (groups[i].indexOf(d) >= 0) return i;
+  return -1;
+}
+function initials(name){
+  var p = String(name||"").trim().split(/\s+/);
+  if (!p[0]) return "??";
+  if (p.length === 1) return p[0].slice(0,4).toUpperCase();
+  return (p[0][0] + p[1][0] + (p[1][1]||"")).toUpperCase();
+}
+function prefs(){ try { return JSON.parse(localStorage.getItem(PREF)) || {}; } catch(e){ return {}; } }
+function savePrefs(o){ try { localStorage.setItem(PREF, JSON.stringify(Object.assign(prefs(), o))); } catch(e){} }
+function setHash(id){
+  var sync = fbConfigured() ? "&s=" + encodeSync() : "";
+  try { history.replaceState(null, "", "#b=" + id + sync); }
+  catch(e){ try { location.hash = "b=" + id + sync; } catch(e2){} }
+}
+function b64url(str){
+  try { return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,""); }
+  catch(e){ return ""; }
+}
+function decode64url(t){
+  try {
+    var padded = t.replace(/-/g,"+").replace(/_/g,"/");
+    while (padded.length % 4) padded += "=";
+    return decodeURIComponent(escape(atob(padded)));
+  } catch(e){ return ""; }
+}
+function fbConfigured(){ return !!(FB.url && FB.key); }
+function encodeSync(){ return fbConfigured() ? b64url("fb\n" + FB.url + "\n" + FB.key) : ""; }
+function decodeSync(t){
+  var raw=decode64url(t),parts=raw.split("\n");
+  return parts[0]==="fb"&&parts[1]&&parts[2]?{url:parts[1].replace(/\/+$/,""),key:parts[2]}:null;
+}
+function fbPath(kind,id,child,url){
+  var base=(url||FB.url)+"/"+kind+"/"+encodeURIComponent(id);
+  if(child!=null)base+="/"+encodeURIComponent(child);
+  return base+".json";
+}
+function authStorageKey(){ return KEY+".fbauth."+fallbackHash(FB.url+"|"+FB.key); }
+function loadFirebaseAuth(){
+  if(FBAUTH)return FBAUTH;
+  try{FBAUTH=JSON.parse(localStorage.getItem(authStorageKey()))||null;}catch(e){FBAUTH=null;}
+  return FBAUTH;
+}
+function saveFirebaseAuth(a){
+  FBAUTH=a;
+  try{localStorage.setItem(authStorageKey(),JSON.stringify(a));}catch(e){}
+  return a;
+}
+function parseAuthResponse(x,refresh){
+  var seconds=Number(x.expiresIn||x.expires_in)||3600;
+  return saveFirebaseAuth({
+    idToken:x.idToken||x.access_token,
+    refreshToken:x.refreshToken||x.refresh_token||(refresh&&refresh.refreshToken),
+    uid:x.localId||x.user_id||(refresh&&refresh.uid),
+    expiresAt:now()+Math.max(60,seconds-90)*1000
+  });
+}
+function ensureFirebaseAuth(){
+  if(!fbConfigured())return Promise.reject(new Error("Firebase URL and Web API Key are required."));
+  var a=loadFirebaseAuth();
+  if(a&&a.idToken&&a.uid&&Number(a.expiresAt)>now())return Promise.resolve(a);
+  if(authPromise)return authPromise;
+  if(a&&a.refreshToken){
+    authPromise=fetch("https://securetoken.googleapis.com/v1/token?key="+encodeURIComponent(FB.key),{
+      method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(a.refreshToken)
+    }).then(function(r){if(!r.ok)throw new Error("Firebase session refresh failed.");return r.json();})
+      .then(function(x){return parseAuthResponse(x,a);})
+      .catch(function(){FBAUTH=null;authPromise=null;try{localStorage.removeItem(authStorageKey());}catch(e){}return createAnonymousAuth();});
+  } else authPromise=createAnonymousAuth();
+  return authPromise.finally(function(){authPromise=null;});
+}
+function createAnonymousAuth(){
+  return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+encodeURIComponent(FB.key),{
+    method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})
+  }).then(function(r){
+    if(!r.ok)return r.json().catch(function(){return{};}).then(function(x){
+      var msg=x&&x.error&&x.error.message;
+      if(msg==="OPERATION_NOT_ALLOWED")throw new Error("Enable Anonymous sign-in in Firebase Authentication first.");
+      throw new Error("Firebase anonymous sign-in failed"+(msg?": "+msg:"."));
+    });
+    return r.json();
+  }).then(function(x){return parseAuthResponse(x,null);});
+}
+function authUrl(url,token){ return url+(url.indexOf("?")>=0?"&":"?")+"auth="+encodeURIComponent(token); }
+function firebaseFetch(url,options){
+  return ensureFirebaseAuth().then(function(a){return fetch(authUrl(url,a.idToken),options||{}).then(function(r){
+    if(r.status===401){FBAUTH=null;authPromise=null;try{localStorage.removeItem(authStorageKey());}catch(e){}throw new Error("Firebase authentication expired. Try again.");}
+    return r;
+  });});
+}
+function currentFirebaseUid(){var a=loadFirebaseAuth();return a&&a.uid||"";}
+function isFirebaseOwner(b){return Store.mode!=="firebase"||!!(b&&b.ownerUid&&b.ownerUid===currentFirebaseUid());}
+function shareUrl(id){
+  if(!fbConfigured())return null;
+  var o=location.origin,p=location.pathname;
+  if(!o||o==="null"||o==="about:")return null;
+  return o+p+"#b="+id+"&s="+encodeSync();
+}
+function now(){ return Date.now(); }
+function trialExpired(b){ return !!b && b.planStatus !== "active" && now() >= Number(b.trialEndsAt || 0); }
+function trialDaysLeft(b){ return Math.max(0, Math.ceil((Number(b.trialEndsAt||0) - now()) / DAY)); }
+function boardLocked(b){ return !b || b.status !== "open" || !!(b.digits && b.digits.x && b.digits.y); }
+function canClaim(b){ return !!b && !trialExpired(b) && b.status === "open" && !(b.digits && b.digits.x && b.digits.y); }
+function assertTrial(b){ if (trialExpired(b)) throw new Error("This board's 30-day trial has ended. It is read-only until subscriptions are connected."); }
+function assertOpen(b){ assertTrial(b); if (b.status !== "open" || (b.digits && b.digits.x)) throw new Error("The board is locked. No more squares can change."); }
+function assertLocked(b){ assertTrial(b); if (b.status !== "locked") throw new Error("Lock the board before drawing numbers."); }
+function hasScores(b){
+  return PERIODS.some(function(p){ var s=b.scores[p.key]; return s && (s.x != null || s.y != null); });
+}
+function appendAudit(b, type, detail){
+  if (!Array.isArray(b.audit)) b.audit = [];
+  b.audit.push({ at:now(), type:type, detail:detail||"", by:state.deviceId });
+  if (b.audit.length > 80) b.audit = b.audit.slice(-80);
+}
+
+/* contrast */
+var INK_DARK = "#15180F", INK_LIGHT = "#FFF9F0";
+function relLum(hex){
+  var c = String(hex||"").replace("#","");
+  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  if (!/^[0-9a-f]{6}$/i.test(c)) return 0;
+  function lin(h){ var v=parseInt(h,16)/255; return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4); }
+  return 0.2126*lin(c.substr(0,2))+0.7152*lin(c.substr(2,2))+0.0722*lin(c.substr(4,2));
+}
+function contrast(a,b){ var l1=relLum(a),l2=relLum(b),hi=Math.max(l1,l2),lo=Math.min(l1,l2); return (hi+.05)/(lo+.05); }
+function inkOn(hex){ return contrast(hex,INK_DARK)>=contrast(hex,INK_LIGHT)?INK_DARK:INK_LIGHT; }
+function applyTeamColors(b){
+  var r=document.documentElement.style;
+  r.setProperty("--tx",b.teamX.color); r.setProperty("--tx-ink",inkOn(b.teamX.color));
+  r.setProperty("--ty",b.teamY.color); r.setProperty("--ty-ink",inkOn(b.teamY.color));
+}
+function burst(color){
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var box=el("confetti"); if(!box)return;
+  for(var i=0;i<22;i++){
+    var n=document.createElement("i");
+    n.style.left=(4+Math.random()*92)+"%"; n.style.background=i%4===0?color:PALETTE[Math.floor(Math.random()*PALETTE.length)];
+    n.style.animationDuration=(.9+Math.random()*.7)+"s"; n.style.animationDelay=(Math.random()*.22)+"s";
+    box.appendChild(n);
+  }
+  setTimeout(function(){ box.innerHTML=""; },2000);
+}
+
+/* PIN hashing: protects against casual source viewing; Firebase rules remain prototype rules. */
+function fallbackHash(text){
+  var h=2166136261;
+  for(var i=0;i<text.length;i++){ h^=text.charCodeAt(i); h=Math.imul(h,16777619); }
+  return (h>>>0).toString(16);
+}
+function hashPin(pin,salt){
+  var text=String(salt||"")+":"+String(pin||"");
+  if (!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.resolve(fallbackHash(text));
+  return crypto.subtle.digest("SHA-256",new TextEncoder().encode(text)).then(function(buf){
+    return Array.prototype.map.call(new Uint8Array(buf),function(x){return x.toString(16).padStart(2,"0");}).join("");
+  });
+}
+function verifyPin(b,pin){
+  if (b.pinHash && b.pinSalt) return hashPin(pin,b.pinSalt).then(function(h){ return h===b.pinHash; });
+  return Promise.resolve(String(pin)===String(b.pin||""));
+}
+function setBoardPin(b,pin){
+  b.pinSalt=b.pinSalt||uid(18);
+  return hashPin(pin,b.pinSalt).then(function(h){ b.pinHash=h; delete b.pin; return b; });
+}
+
+/* ---------------- model ---------------- */
+function appTrial(){
+  var p=prefs(), start=Number(p.trialStartedAt||0), end=Number(p.trialEndsAt||0);
+  if(!start||!end){ start=now(); end=start+TRIAL_DAYS*DAY; savePrefs({trialStartedAt:start,trialEndsAt:end}); }
+  return {start:start,end:end};
+}
+function newBoard(){
+  var t=appTrial();
+  return {
+    id:uid(10), rev:1, version:2, name:"Sunday points squares",
+    teamX:{name:"Arizona Cardinals",short:"ARI",color:"#97233F",logo:logoUrl("500/ari.png")},
+    teamY:{name:"Carolina Panthers",short:"CAR",color:"#0085CA",logo:logoUrl("500-dark/car.png")},
+    mode:"instant", cols:10, rows:10, status:"open", lockedAt:null, allowedCells:allowedCellsFor(10,10),
+    rules:"For fun only — no money or prizes.\nSquares lock when claimed.\nThe organizer may lock an undersold board and still draw numbers.\nAfter the board locks, no squares can be added, removed, or exchanged.\nIf an open square wins, nobody receives those points.",
+    rewards:[
+      {key:"q1",label:"1st Quarter",points:100,reverse:25},
+      {key:"q2",label:"Halftime",points:150,reverse:50},
+      {key:"q3",label:"3rd Quarter",points:100,reverse:25},
+      {key:"final",label:"Final Score",points:300,reverse:100}
+    ],
+    digits:{x:null,y:null,drawnAt:null}, squares:{},
+    scores:{q1:{x:null,y:null},q2:{x:null,y:null},q3:{x:null,y:null},final:{x:null,y:null}},
+    pinSalt:uid(18), pinHash:"", ownerUid:"", createdAt:now(), updatedAt:now(),
+    trialStartedAt:t.start, trialEndsAt:t.end, planStatus:"trial", audit:[]
+  };
+}
+function migrate(b){
+  if(!b||!b.teamX||!b.squares) return b;
+  if(typeof b.cols!=="number")b.cols=10;
+  if(typeof b.rows!=="number")b.rows=10;
+  if(!b.status) b.status=(b.digits&&b.digits.x)?"drawn":"open";
+  if(!b.rewards){
+    b.rewards=(b.payouts||[]).map(function(p){return {key:p.key,label:p.label,points:Number(p.amount)||0,reverse:Number(p.reverse)||0};});
+    if(!b.rewards.length) b.rewards=newBoard().rewards;
+  }
+  delete b.payouts; delete b.price; delete b.currency;
+  b.allowedCells=allowedCellsFor(b.cols,b.rows);
+  b.squares=cleanClaims(b.squares,b.allowedCells);
+  if(b.digits){
+    ["x","y"].forEach(function(ax){
+      var g=b.digits[ax];
+      if(g&&g.length&&typeof g[0]==="number") b.digits[ax]=g.map(function(d){return[d];});
+    });
+  } else b.digits={x:null,y:null,drawnAt:null};
+  if(!b.scores)b.scores={q1:{x:null,y:null},q2:{x:null,y:null},q3:{x:null,y:null},final:{x:null,y:null}};
+  var created=Number(b.createdAt)||now();
+  if(!b.trialStartedAt)b.trialStartedAt=created;
+  if(!b.trialEndsAt)b.trialEndsAt=created+TRIAL_DAYS*DAY;
+  if(!b.planStatus)b.planStatus="trial";
+  if(!Array.isArray(b.audit))b.audit=[];
+  if(typeof b.ownerUid!=="string")b.ownerUid="";
+  b.version=2;
+  return b;
+}
+function playerColor(name){
+  var b=state.board;if(!b)return PALETTE[0];
+  var names=[]; Object.keys(b.squares).forEach(function(k){if(names.indexOf(b.squares[k].name)<0)names.push(b.squares[k].name);});
+  names.sort(); var i=names.indexOf(name); return PALETTE[(i<0?0:i)%PALETTE.length];
+}
+function playerInk(name){ return inkOn(playerColor(name)); }
+function roster(){
+  var b=state.board,map={};
+  Object.keys(b.squares).forEach(function(k){
+    var s=b.squares[k];
+    if(!map[s.name])map[s.name]={name:s.name,total:0,pending:0,keys:[]};
+    map[s.name].keys.push(k);
+    if(s.status==="pending")map[s.name].pending++; else map[s.name].total++;
+  });
+  return Object.keys(map).map(function(n){return map[n];}).sort(function(a,c){return c.total-a.total||a.name.localeCompare(c.name);});
+}
+function claimedCount(b){
+  var n=0; Object.keys(b.squares).forEach(function(k){if(b.squares[k].status!=="pending")n++;}); return n;
+}
+function reservedCount(b){ return Object.keys(b.squares).length; }
+function pendingCount(b){ return reservedCount(b)-claimedCount(b); }
+function winners(periodKey,b){
+  b=b||state.board; var d=b.digits,s=b.scores[periodKey];
+  if(!d||!d.x||!d.y||!s||s.x==null||s.y==null)return null;
+  var xi=digitIndex(d.x,s.x%10),yi=digitIndex(d.y,s.y%10),rx=digitIndex(d.x,s.y%10),ry=digitIndex(d.y,s.x%10);
+  if(xi<0||yi<0||rx<0||ry<0)return null;
+  return {straight:xi+","+yi,reverse:rx+","+ry};
+}
+function winMap(){
+  var m={}; PERIODS.forEach(function(p){var w=winners(p.key);if(!w)return;
+    if(!m[w.straight])m[w.straight]=[];m[w.straight].push({p:p,kind:"straight"});
+    if(!m[w.reverse])m[w.reverse]=[];m[w.reverse].push({p:p,kind:"reverse"});
+  }); return m;
+}
+function rewardFor(key,b){
+  b=b||state.board;
+  for(var i=0;i<b.rewards.length;i++)if(b.rewards[i].key===key)return b.rewards[i];
+  return {key:key,label:key,points:0,reverse:0};
+}
+function pointTotals(b){
+  var out={};
+  PERIODS.forEach(function(p){
+    var w=winners(p.key,b),r=rewardFor(p.key,b); if(!w)return;
+    var a=b.squares[w.straight],z=b.squares[w.reverse];
+    if(a&&a.status!=="pending")out[a.name]=(out[a.name]||0)+(Number(r.points)||0);
+    if(z&&z.status!=="pending")out[z.name]=(out[z.name]||0)+(Number(r.reverse)||0);
+  });
+  return out;
+}
+
+/* ---------------- storage ---------------- */
+function boardMeta(b){
+  var x=JSON.parse(JSON.stringify(b));
+  x.allowedCells=allowedCellsFor(cols(x),rows(x));
+  delete x.squares;
+  return x;
+}
+var Store={
+  mode:"local",
+  localOk:function(){try{localStorage.setItem(KEY+".probe","1");localStorage.removeItem(KEY+".probe");return true;}catch(e){return false;}},
+  init:function(){
+    this.mode=fbConfigured()?"firebase":(this.localOk()?"local":"memory");
+    return this.mode==="firebase"?ensureFirebaseAuth().then(function(){return true;}):Promise.resolve(true);
+  },
+  localKey:function(id){return KEY+".board."+id;},
+  get:function(id){
+    if(this.mode==="firebase"){
+      return Promise.all([
+        firebaseFetch(fbPath("boards",id),{headers:{"X-Firebase-ETag":"true"}}),
+        firebaseFetch(fbPath("claims",id),{headers:{"X-Firebase-ETag":"true"}})
+      ]).then(function(rs){
+        if(!rs[0].ok)throw new Error(rs[0].status===401||rs[0].status===403?"Firebase rules blocked this board.":"Firebase board read returned "+rs[0].status+".");
+        if(!rs[1].ok)throw new Error(rs[1].status===401||rs[1].status===403?"Firebase rules blocked the claims.":"Firebase claims read returned "+rs[1].status+".");
+        var bt=rs[0].headers.get("ETag"),ct=rs[1].headers.get("ETag");if(bt)etags["b:"+id]=bt;if(ct)etags["c:"+id]=ct;
+        return Promise.all([rs[0].json(),rs[1].json()]);
+      }).then(function(v){if(!v[0])return null;v[0].squares=v[1]||{};return migrate(v[0]);})
+        .catch(function(e){state.syncErr=e.message;throw e;});
+    }
+    return new Promise(function(res){
+      try{var raw=Store.mode==="memory"?mem[Store.localKey(id)]:localStorage.getItem(Store.localKey(id));if(!raw&&Store.mode!=="memory")raw=localStorage.getItem(LEGACY_KEY+".board."+id);res(raw?migrate(JSON.parse(raw)):null);}catch(e){res(null);}
+    });
+  },
+  set:function(id,b){
+    if(this.mode==="firebase"){
+      var h={"Content-Type":"application/json","X-Firebase-ETag":"true"},tag=etags["b:"+id];if(tag)h["if-match"]=tag;
+      return firebaseFetch(fbPath("boards",id),{method:"PUT",headers:h,body:JSON.stringify(boardMeta(b))}).then(function(r){
+        if(r.status===412){delete etags["b:"+id];var e=new Error("Another phone saved the board first.");e.conflict=true;throw e;}
+        if(!r.ok)throw new Error(r.status===401||r.status===403?"Only the organizer device can change board settings.":"Firebase refused the board save ("+r.status+").");
+        var nt=r.headers.get("ETag");if(nt)etags["b:"+id]=nt;else delete etags["b:"+id];return true;
+      });
+    }
+    var raw=JSON.stringify(b);return new Promise(function(res,rej){try{if(Store.mode==="memory")mem[Store.localKey(id)]=raw;else localStorage.setItem(Store.localKey(id),raw);res(true);}catch(e){rej(new Error("Storage is blocked. The change was not saved."));}});
+  },
+  setClaims:function(id,squares,allowed){
+    if(this.mode!=="firebase")return Promise.resolve(true);
+    var payload=cleanClaims(squares||{},allowed||allowedCellsFor(cols(state.board),rows(state.board)));
+    var h={"Content-Type":"application/json","X-Firebase-ETag":"true"},tag=etags["c:"+id];if(tag)h["if-match"]=tag;
+    return firebaseFetch(fbPath("claims",id),{method:"PUT",headers:h,body:JSON.stringify(Object.keys(payload).length?payload:null)}).then(function(r){
+      if(r.status===412){delete etags["c:"+id];var e=new Error("Another phone changed a square first.");e.conflict=true;throw e;}
+      if(!r.ok)throw new Error(r.status===401||r.status===403?"Only the organizer can edit existing claims.":"Firebase refused the claims save ("+r.status+").");
+      var nt=r.headers.get("ETag");if(nt)etags["c:"+id]=nt;else delete etags["c:"+id];return true;
+    });
+  },
+  createClaim:function(id,cell,claimData){
+    if(this.mode!=="firebase")return Promise.reject(new Error("Atomic Firebase claim called in local mode."));
+    return firebaseFetch(fbPath("claims",id,cell),{method:"PUT",headers:{"Content-Type":"application/json","if-match":"null_etag","X-Firebase-ETag":"true"},body:JSON.stringify(claimData)}).then(function(r){
+      if(r.status===412){var e=new Error("Another player claimed that square first.");e.conflict=true;throw e;}
+      if(!r.ok)throw new Error(r.status===401||r.status===403?"The board is locked, the trial ended, or Firebase rejected this claim.":"Firebase refused the claim ("+r.status+").");
+      return true;
+    });
+  }
+};
+function touchIndex(b){
+  var list=state.index.filter(function(x){return x.id!==b.id;});
+  list.unshift({id:b.id,name:b.name,x:b.teamX.short,y:b.teamY.short,at:now()}); state.index=list.slice(0,12);
+  try{localStorage.setItem(IDX,JSON.stringify(state.index));}catch(e){}
+}
+function saveNewBoard(b){
+  if(Store.mode!=="firebase")return Store.set(b.id,b).then(function(){state.board=b;touchIndex(b);return b;});
+  return ensureFirebaseAuth().then(function(a){b.ownerUid=a.uid;return Store.get(b.id).then(function(existing){return {auth:a,existing:existing};});}).then(function(ctx){
+    if(ctx.existing&&ctx.existing.ownerUid!==ctx.auth.uid)throw new Error("A different organizer already uses this board code. Create a new board.");
+    return Store.set(b.id,b).then(function(){return Store.setClaims(b.id,b.squares||{},b.allowedCells||allowedCellsFor(cols(b),rows(b)));});
+  }).then(function(){return Store.get(b.id);}).then(function(check){
+    if(!check)throw new Error("Firebase did not return the uploaded board.");state.board=check;state.syncErr="";touchIndex(check);return check;
+  });
+}
+function mutate(apply,verify){
+  function attempt(n){
+    return Store.get(state.boardId).then(function(fresh){
+      if(Store.mode==="firebase"&&!fresh)throw new Error("The board is missing from Firebase. Restore a backup instead of overwriting it.");
+      var b=fresh||state.board;if(!b)throw new Error("No board is open.");
+      if(Store.mode==="firebase"&&!isFirebaseOwner(b))throw new Error("Only the organizer device can make this change.");
+      var beforeClaims=JSON.stringify(b.squares||{});
+      apply(b);var claimsChanged=beforeClaims!==JSON.stringify(b.squares||{});
+      b.rev=(b.rev||0)+1;b.updatedAt=now();
+      return Store.set(b.id,b).then(function(){return claimsChanged&&Store.mode==="firebase"?Store.setClaims(b.id,b.squares,b.allowedCells||allowedCellsFor(cols(b),rows(b))):true;}).then(function(){return Store.get(b.id);}).then(function(check){
+        var f=check||b;if(verify&&!verify(f)){if(n<3)return attempt(n+1);throw new Error("Another phone changed the same item. Try once more.");}
+        state.board=f;state.syncErr="";touchIndex(f);return f;
+      });
+    }).catch(function(e){if(e&&e.conflict&&n<4)return attempt(n+1);throw e;});
+  }
+  state.writing=true;var p=writeQueue.then(function(){return attempt(0);},function(){return attempt(0);});writeQueue=p.then(function(){},function(){});return p.finally(function(){state.writing=false;});
+}
+function pull(){
+  if(!state.boardId||state.writing)return Promise.resolve();
+  return Store.get(state.boardId).then(function(b){
+    if(!b)return;
+    if(!state.board||b.rev!==state.board.rev||b.updatedAt!==state.board.updatedAt){state.board=b;render();}else syncChip();
+  }).catch(function(){syncChip();});
+}
+
+/* ---------------- mutations ---------------- */
+function claim(cellKey,name,note){
+  var claimId=uid(14);
+  if(Store.mode==="firebase"){
+    state.writing=true;
+    return Store.get(state.boardId).then(function(b){
+      if(!b)throw new Error("Board not found.");assertOpen(b);
+      if(b.squares[cellKey])throw new Error(b.squares[cellKey].name+" already reserved that square.");
+      return ensureFirebaseAuth().then(function(a){
+        return Store.createClaim(b.id,cellKey,{name:name,status:b.mode==="request"?"pending":"claimed",at:now(),uid:a.uid,claimId:claimId});
+      });
+    }).then(function(){return Store.get(state.boardId);}).then(function(f){
+      var c=f&&f.squares[cellKey];if(!c||c.claimId!==claimId)throw new Error("The claim could not be verified.");state.board=f;state.syncErr="";touchIndex(f);return f;
+    }).finally(function(){state.writing=false;});
+  }
+  return mutate(function(b){
+    assertOpen(b);if(b.squares[cellKey])throw new Error(b.squares[cellKey].name+" already reserved that square.");
+    b.squares[cellKey]={name:name,status:b.mode==="request"?"pending":"claimed",at:now(),uid:state.deviceId,claimId:claimId};appendAudit(b,"claim",cellKey+" "+name);
+  },function(f){var c=f.squares[cellKey];return !!c&&c.claimId===claimId;});
+}
+function setStatus(k,status){
+  mutate(function(b){assertOpen(b);if(!b.squares[k])throw new Error("That request was already handled.");b.squares[k].status=status;appendAudit(b,"approve",k);})
+    .then(function(){render();toast("Square approved");}).catch(function(e){toast(e.message,true);render();});
+}
+function removeSquare(k){
+  mutate(function(b){assertOpen(b);if(!b.squares[k])return;delete b.squares[k];appendAudit(b,"release",k);})
+    .then(function(){render();toast("Square is open again");}).catch(function(e){toast(e.message,true);render();});
+}
+function lockBoard(){
+  var b=state.board, pend=pendingCount(b), open=totalSquares(b)-reservedCount(b);
+  var msg="Lock this board now?";
+  if(open)msg+="\n\n"+open+" squares will remain open. The game can still be played, but an open winning square earns 0 points.";
+  if(pend)msg+="\n\n"+pend+" pending request"+(pend===1?" will":"s will")+" be removed.";
+  msg+="\n\nAfter locking, nobody can claim, remove, or exchange squares.";
+  if(!confirm(msg))return;
+
+  /* Lock metadata first. Firebase then rejects all new public claims while the
+     organizer removes pending requests in a separate conditional claims write. */
+  mutate(function(x){
+    assertOpen(x);x.status="locked";x.lockedAt=now();
+    appendAudit(x,"lock",(totalSquares(x)-reservedCount(x))+" open");
+  }).then(function(){
+    return mutate(function(x){Object.keys(x.squares).forEach(function(k){if(x.squares[k].status==="pending")delete x.squares[k];});});
+  }).then(function(){closeSheet();render();toast("Board locked. Numbers can be drawn now.");})
+    .catch(function(e){toast(e.message,true);pull();});
+}
+function unlockBoard(){
+  if(!confirm("Unlock the board and reopen claims?"))return;
+  mutate(function(b){assertTrial(b);if(b.status!=="locked"||b.digits.x||hasScores(b))throw new Error("A drawn or scored board cannot be unlocked. Reset the draw first.");b.status="open";b.lockedAt=null;appendAudit(b,"unlock","");})
+    .then(function(){closeSheet();render();toast("Board reopened");}).catch(function(e){toast(e.message,true);});
+}
+function drawGroups(n){
+  var a=[0,1,2,3,4,5,6,7,8,9],i,j,t,per=Math.floor(10/n),out=[];
+  for(i=a.length-1;i>0;i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;}
+  for(i=0;i<n;i++)out.push(a.slice(i*per,(i+1)*per).sort(function(p,q){return p-q;}));return out;
+}
+function runDraw(){
+  var b0=state.board;try{assertLocked(b0);}catch(e){return toast(e.message,true);}
+  var fx=drawGroups(cols(b0)),fy=drawGroups(rows(b0));
+  function commit(){
+    mutate(function(b){assertLocked(b);b.digits={x:fx,y:fy,drawnAt:now()};b.status="drawn";appendAudit(b,"draw",JSON.stringify({x:fx,y:fy}));})
+      .then(function(){render();burst(state.board.teamX.color);toast("Numbers are locked in");}).catch(function(e){toast(e.message,true);render();});
+  }
+  closeSheet();
+  var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cells=Array.prototype.slice.call(document.querySelectorAll("[data-axis]"));if(reduce||!cells.length)return commit();
+  cells.forEach(function(c){c.classList.add("rolling");c.textContent="?";delete c.dataset.done;});
+  var spin=setInterval(function(){cells.forEach(function(c){if(c.dataset.done)return;var n=Number(c.dataset.per)||1,o="";for(var q=0;q<n;q++)o+=Math.floor(Math.random()*10);c.textContent=o;});},60);
+  cells.forEach(function(c,i){setTimeout(function(){var ax=c.getAttribute("data-axis"),ix=Number(c.getAttribute("data-i"));c.dataset.done="1";c.textContent=groupText(ax==="x"?fx[ix]:fy[ix]);c.classList.remove("rolling");c.classList.add("set","pop");if(i===cells.length-1){clearInterval(spin);setTimeout(commit,300);}},350+i*90);});
+}
+function resetDraw(){
+  if(!confirm("Reset the drawn numbers? Scores will also be cleared. The board stays locked so players cannot cherry-pick squares."))return;
+  mutate(function(b){assertTrial(b);if(!b.digits.x)throw new Error("Numbers have not been drawn yet.");b.digits={x:null,y:null,drawnAt:null};b.scores={q1:{x:null,y:null},q2:{x:null,y:null},q3:{x:null,y:null},final:{x:null,y:null}};b.status="locked";appendAudit(b,"reset_draw","");})
+    .then(function(){closeSheet();render();toast("Draw reset. Board remains locked.");}).catch(function(e){toast(e.message,true);});
+}
+
+/* ---------------- rendering ---------------- */
+function render(){
+  var app=el("app");if(state.board)applyTeamColors(state.board);
+  if(!state.board){app.innerHTML=renderSetupPrompt();bindGlobal();return;}
+  var b=state.board;
+  app.innerHTML=renderTrial(b)+renderMatchup(b)+renderInfo(b)+renderBoard(b)+renderScores(b)+renderRewards(b)+renderRequests(b)+renderRoster(b)+renderRules(b)+renderFooter(b);
+  bindGlobal();bindBoard();
+}
+function renderSetupPrompt(){
+  var recent=state.index.map(function(x){return '<button class="btn sm" data-open="'+esc(x.id)+'">'+esc(x.name)+" "+esc(x.x)+"/"+esc(x.y)+"</button>";}).join("");
+  var t=appTrial(),left=Math.max(0,Math.ceil((t.end-now())/DAY));
+  return '<section><div class="card"><div class="empty"><strong>SLO Points Squares</strong>Run a football squares game for fun. No payments, wagers, or cash prizes.</div>'+
+    '<div class="note"><b>30-day free trial</b><br>'+left+' day'+(left===1?'':'s')+' remaining on this device. Subscription checkout will be connected later.</div>'+
+    '<div class="btnrow" style="margin-top:10px"><button class="btn primary full" id="createBoard"'+(left?"":" disabled")+'>Create a points board</button></div>'+
+    (recent?'<div class="note"><b>Recent boards</b><div class="btnrow" style="margin-top:8px">'+recent+'</div></div>':"")+
+    '<div class="note"><b>Joining a board?</b><div class="two" style="margin-top:8px"><input id="joinCode" placeholder="board code" maxlength="14" style="min-height:44px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"><button class="btn" id="joinGo">Open board</button></div></div></div></section>';
+}
+function renderTrial(b){
+  if(b.planStatus==="active")return "";
+  var left=trialDaysLeft(b),expired=trialExpired(b);
+  return '<div class="note" style="margin-top:12px;border:1px solid '+(expired?'var(--danger)':'var(--accent)')+'"><b>'+(expired?'Trial ended — read-only':left+' day'+(left===1?'':'s')+' left in the free trial')+'</b><br>'+(expired?'The board remains visible, but claims and admin changes are disabled until subscriptions are connected.':'This prototype includes a 30-day organizer trial. Players can join without paying.')+'</div>';
+}
+function latestScore(b){for(var i=PERIODS.length-1;i>=0;i--){var s=b.scores[PERIODS[i].key];if(s&&s.x!=null&&s.y!=null)return s;}return null;}
+function renderMatchup(b){
+  var live=latestScore(b);
+  function card(t,axis,val){return '<div class="team" style="--tc:'+esc(t.color)+';--tci:'+inkOn(t.color)+'">'+logoImg(t,"tlogo")+'<div class="tmeta"><div class="axis">'+axis+'</div><div class="nm">'+esc(t.name)+'</div></div>'+(val==null?'':'<div class="sc">'+val+'</div>')+'</div>';}
+  return '<div class="matchup">'+card(b.teamY,"Rows, left side",live?live.y:null)+'<div class="vs">VS</div>'+card(b.teamX,"Columns, top",live?live.x:null)+'</div>';
+}
+function statusLabel(b){return b.status==="open"?"Open for picks":b.status==="locked"?"Locked — ready to draw":b.status==="drawn"?"Numbers drawn":"Finished";}
+function renderInfo(b){
+  var claimed=claimedCount(b),pending=pendingCount(b),tot=totalSquares(b),open=tot-reservedCount(b),chips="";
+  chips+='<span class="chip">'+esc(b.name)+'</span>';
+  chips+='<span class="chip '+(b.status==="open"?'live':'')+'">'+statusLabel(b)+'</span>';
+  chips+='<span class="chip pot">Points only — no money</span>';
+  if(pending)chips+='<span class="chip">'+pending+' pending</span>';
+  chips+='<span class="chip live" id="syncChip">'+syncText()+'</span>';
+  var label='<b>'+claimed+'</b>/'+tot+' claimed'+(open?', '+open+' open':', board filled');
+  var bar='<div class="progress"><div class="bar" style="width:'+Math.round(claimed/tot*100)+'%"></div><div class="lb">'+label+'</div></div>';
+  return bar+'<div class="inforow">'+chips+'</div>';
+}
+function syncText(){if(state.syncErr)return state.syncErr;if(Store.mode==="firebase")return"Authenticated Firebase";if(Store.mode==="memory")return"Not saved — storage blocked";return"Demo saved on this device";}
+function syncChip(){var c=el("syncChip");if(c){c.textContent=syncText();c.className="chip "+(state.syncErr||Store.mode==="memory"?"warn":"live");}}
+function renderBoard(b){
+  var wm=winMap(),html="",x,y,k,s,cls,label,tag,style,w,nc=cols(b),nr=rows(b),perX=Math.floor(10/nc),perY=Math.floor(10/nr);
+  var drawn=!!(b.digits.x&&b.digits.y&&b.digits.x.length===nc&&b.digits.y.length===nr);
+  var gridCss="grid-template-columns:minmax(0,1.12fr) repeat("+nc+",minmax(0,1fr));--zoomw:"+((nc+1)*58)+"px",gridCls="grid c"+(nc>=10?"10":"5");
+  var axX="--ax:"+esc(b.teamX.color)+";--axi:"+inkOn(b.teamX.color),axY="--ax:"+esc(b.teamY.color)+";--axi:"+inkOn(b.teamY.color);
+  var qx=new Array(perX+1).join("?"),qy=new Array(perY+1).join("?");
+  html+='<div class="gcell corner"></div>';
+  for(x=0;x<nc;x++)html+='<div class="gcell axis'+(drawn?' set':'')+(perX>1?' multi':'')+'" style="'+axX+'" data-axis="x" data-per="'+perX+'" data-i="'+x+'">'+(drawn?groupText(b.digits.x[x]):qx)+'</div>';
+  for(y=0;y<nr;y++){
+    html+='<div class="gcell axis'+(drawn?' set':'')+(perY>1?' multi':'')+'" style="'+axY+'" data-axis="y" data-per="'+perY+'" data-i="'+y+'">'+(drawn?groupText(b.digits.y[y]):qy)+'</div>';
+    for(x=0;x<nc;x++){
+      k=x+","+y;s=b.squares[k];cls="gcell sq";label="";tag="";style="";
+      if(!s)cls+=" free";else{style="--pc:"+playerColor(s.name)+";--pi:"+playerInk(s.name);cls+=s.status==="pending"?" pending":" taken";label=esc(initials(s.name));if(s.by===state.deviceId)cls+=" mine";if(k===state.fresh)cls+=" fresh";}
+      w=wm[k];if(w&&w.length){cls+=" win";tag='<span class="tag'+(w[0].kind==="reverse"?' rev':'')+'">'+(w[0].p.key==="final"?'F':w[0].p.key.toUpperCase())+(w[0].kind==="reverse"?'R':'')+'</span>';}
+      var aria="Square column "+(x+1)+", row "+(y+1)+(s?", taken by "+s.name:", open")+(boardLocked(b)?", board locked":"");
+      html+='<button class="'+cls+'" style="'+style+'" data-cell="'+k+'" aria-label="'+esc(aria)+'">'+label+tag+'</button>';
+    }
+  }
+  var legend=roster().slice(0,12).map(function(r){return '<span class="lg"><span class="sw" style="--c:'+playerColor(r.name)+'"></span>'+esc(r.name)+' <b>'+r.total+(r.pending?'+'+r.pending:'')+'</b></span>';}).join("");
+  var note=b.status==="open"?'Tap an open square to claim it. Numbers stay hidden until the organizer locks the board.':b.status==="locked"?'Claims are closed. The organizer can draw the numbers now.':'Claims are closed and the numbers are final.';
+  return '<section><div class="boardcard"><div class="boardhead"><h2>'+(drawn?'Numbers are drawn':b.status==="locked"?'Board locked':'Numbers hidden')+'</h2><span class="chip" style="margin-left:auto;margin-right:8px">'+nc+' by '+nr+'</span><button class="iconbtn'+(state.zoom?' on':'')+'" id="zoomBtn">'+(state.zoom?'Fit':'Bigger')+'</button></div><div class="boardscroll'+(state.zoom?' zoomed':'')+'" id="boardscroll"><div class="'+gridCls+'" id="grid" style="'+gridCss+'">'+html+'</div></div>'+(legend?'<div class="legend">'+legend+'</div>':'')+'<div class="note">'+note+'</div></div></section>';
+}
+function renderScores(b){
+  var rowsHtml=PERIODS.map(function(p){var s=b.scores[p.key],has=s.x!=null&&s.y!=null,pills=has?'<span class="pill" style="--c:'+esc(b.teamY.color)+';--ci:'+inkOn(b.teamY.color)+'">'+s.y+'</span><span class="pill" style="--c:'+esc(b.teamX.color)+';--ci:'+inkOn(b.teamX.color)+'">'+s.x+'</span>':'<span class="pill blank">'+esc(b.teamY.short)+'</span><span class="pill blank">'+esc(b.teamX.short)+'</span>';return '<div class="prow'+(has?' hit':'')+'"><div class="lbl">'+esc(p.label)+'</div><div class="scorepills">'+pills+'</div></div>';}).join("");
+  return '<section><div class="sechead"><h2>Score</h2>'+(state.isAdmin&&b.digits.x&&!trialExpired(b)?'<button class="btn sm" id="scoreBtn">Enter scores</button>':'')+'</div><div class="card">'+rowsHtml+'</div></section>';
+}
+function renderRewards(b){
+  var rowsHtml=b.rewards.map(function(r){var w=winners(r.key,b),sq,rq,sub="",hit="";if(w){sq=b.squares[w.straight];rq=b.squares[w.reverse];hit=" hit";sub='<div class="sub">Winner <b>'+(sq&&sq.status!=="pending"?esc(sq.name):'open square — 0 points')+'</b>'+(Number(r.reverse)>0?' · Reverse <b>'+(rq&&rq.status!=="pending"?esc(rq.name):'open square — 0 points')+'</b>':'')+'</div>';}
+    return '<div class="prow'+hit+'"><div class="lbl">'+esc(r.label)+'</div><div class="amt">'+points(r.points)+(Number(r.reverse)>0?' <span style="color:var(--ink-3)">/ '+points(r.reverse)+'</span>':'')+'</div>'+sub+'</div>';}).join("");
+  return '<section><div class="sechead"><h2>Points</h2><span class="chip">winner / reverse</span></div><div class="card">'+rowsHtml+'</div></section>';
+}
+function renderRequests(b){
+  if(b.mode!=="request")return"";var pend=Object.keys(b.squares).filter(function(k){return b.squares[k].status==="pending";});if(!pend.length)return state.isAdmin&&b.status==="open"?'<section><div class="sechead"><h2>Requests</h2></div><div class="card"><div class="empty">No requests waiting.</div></div></section>':"";
+  var rowsHtml=pend.map(function(k){var s=b.squares[k],p=k.split(",");return '<div class="reqrow"><div class="info"><b>'+esc(s.name)+'</b><span>column '+(Number(p[0])+1)+', row '+(Number(p[1])+1)+'</span></div>'+(state.isAdmin&&b.status==="open"?'<button class="btn sm primary" data-approve="'+k+'">Approve</button><button class="btn sm danger" data-decline="'+k+'">Decline</button>':'<span class="chip">waiting</span>')+'</div>';}).join("");
+  return '<section><div class="sechead"><h2>Requests</h2><span class="chip"><b>'+pend.length+'</b> waiting</span></div><div class="card">'+rowsHtml+'</div></section>';
+}
+function renderRoster(b){
+  var r=roster();if(!r.length)return"";var totals=pointTotals(b),rowsHtml=r.map(function(p){return '<div class="rrow"><span class="dot" style="--pc:'+playerColor(p.name)+';--pi:'+playerInk(p.name)+'">'+esc(initials(p.name))+'</span><span class="nm">'+esc(p.name)+'</span><span class="ct">'+p.total+(p.pending?' +'+p.pending+' pending':'')+'</span><span class="owe clear">'+points(totals[p.name]||0)+'</span></div>';}).join("");
+  return '<section><div class="sechead"><h2>Players</h2><span class="chip">points earned</span></div><div class="card">'+rowsHtml+'</div></section>';
+}
+function renderRules(b){return b.rules?'<section><div class="sechead"><h2>Rules</h2></div><div class="card"><div class="rules">'+esc(b.rules)+'</div></div></section>':"";}
+function renderFooter(b){return '<section><div class="note">Board code <b>'+esc(b.id)+'</b>. '+(Store.mode==="firebase"?'Every phone using the shared link reads the same authenticated Firebase board.':'This is a local demo copy. Connect Firebase in Admin → Firebase before sharing.')+'</div></section>';}
+
+/* ---------------- bindings ---------------- */
+function bindBoard(){
+  var grid=el("grid");if(!grid)return;
+  grid.addEventListener("click",function(e){var cell=e.target.closest("[data-cell]");if(cell)return openClaim(cell.getAttribute("data-cell"));var ax=e.target.closest("[data-axis]");if(ax){if(state.board.digits.x)return;if(state.isAdmin)openAdmin("numbers");else toast(state.board.status==="open"?"Numbers stay hidden until the board locks.":"The organizer is ready to draw the numbers.");}});
+  var z=el("zoomBtn");if(z)z.onclick=function(){state.zoom=!state.zoom;el("boardscroll").classList.toggle("zoomed",state.zoom);z.textContent=state.zoom?"Fit":"Bigger";z.classList.toggle("on",state.zoom);};
+  var sb=el("scoreBtn");if(sb)sb.onclick=function(){openAdmin("scores");};
+}
+function bindGlobal(){
+  var cb=el("createBoard");if(cb)cb.onclick=function(){createBoardFlow();};
+  var jg=el("joinGo");if(jg)jg.onclick=function(){var code=(el("joinCode").value||"").trim().toLowerCase();if(!code)return toast("Type the board code first",true);loadBoard(code);};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-open]"),function(btn){btn.onclick=function(){loadBoard(btn.getAttribute("data-open"));};});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-approve]"),function(btn){btn.onclick=function(){setStatus(btn.getAttribute("data-approve"),"claimed");};});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-decline]"),function(btn){btn.onclick=function(){removeSquare(btn.getAttribute("data-decline"));};});
+}
+function createBoardFlow(){
+  var t=appTrial();if(now()>=t.end)return toast("The 30-day trial has ended on this device.",true);
+  var b=newBoard(),pin=String(Math.floor(100000+Math.random()*900000));
+  setBoardPin(b,pin).then(function(){state.boardId=b.id;return saveNewBoard(b);}).then(function(){state.isAdmin=true;var p=prefs(),admins=p.admins||{};admins[b.id]=true;savePrefs({admins:admins,lastBoard:b.id});setHash(b.id);render();openSheet('<div class="sheethead"><h3>Board created</h3><p>Save this organizer PIN now.</p></div><div class="sqpreview"><div class="box" style="width:82px">'+pin+'</div><div class="meta"><b>Organizer PIN</b>This PIN is shown once. Players do not need it.</div></div><button class="btn primary full" id="createdGo">Set up the board</button>',function(){el("createdGo").onclick=function(){openAdmin("setup");};});}).catch(function(e){toast(e.message,true);});
+}
+function openClaim(k){
+  var b=state.board,s=b.squares[k],p=k.split(","),col=Number(p[0]),row=Number(p[1]),drawn=!!(b.digits.x&&b.digits.y);
+  var coord=drawn?esc(b.teamX.short)+" ends in "+groupText(b.digits.x[col])+", "+esc(b.teamY.short)+" ends in "+groupText(b.digits.y[row]):"column "+(col+1)+", row "+(row+1)+", numbers hidden";
+  if(s){
+    var body='<div class="sheethead"><h3>'+esc(s.name)+'</h3><p>'+coord+'</p></div><div class="sqpreview"><div class="box" style="border-color:'+playerColor(s.name)+'">'+esc(initials(s.name))+'</div><div class="meta"><b>'+(s.status==="pending"?'Waiting on approval':'Locked in')+'</b>'+'This square is reserved.'+'</div></div>';
+    if(state.isAdmin&&b.status==="open"&&!trialExpired(b))body+='<div class="btnrow">'+(s.status==="pending"?'<button class="btn primary" id="apr">Approve</button>':'')+'<button class="btn danger" id="rem">Free this square</button></div>';
+    openSheet(body,function(){var a=el("apr"),r=el("rem");if(a)a.onclick=function(){closeSheet();setStatus(k,"claimed");};if(r)r.onclick=function(){closeSheet();removeSquare(k);};});return;
+  }
+  if(!canClaim(b))return openSheet('<div class="sheethead"><h3>Square unavailable</h3><p>'+coord+'</p></div><div class="note">'+(trialExpired(b)?'The free trial has ended and the board is read-only.':'The board is locked. Open squares stay empty and earn 0 points if they win.')+'</div>');
+  var known=roster().map(function(r){return '<button class="pick" data-name="'+esc(r.name)+'">'+esc(r.name)+'</button>';}).join(""),isReq=b.mode==="request";
+  var form='<div class="sheethead"><h3>'+(isReq?'Request this square':'Claim this square')+'</h3><p>'+coord+'</p></div><div class="sqpreview"><div class="box">'+(col+1)+'/'+(row+1)+'</div><div class="meta"><b>Free points game</b>'+(isReq?'The organizer approves the request first.':'The square locks as soon as the save finishes.')+'</div></div>'+(known?'<div class="field"><label>Players already here</label><div class="pickgrid">'+known+'</div></div>':'')+'<div class="field" id="fName"><label>Your name</label><input id="nm" placeholder="Player name" autocomplete="name" value="'+esc(state.me)+'" maxlength="24"><div class="errmsg">Enter a name.</div></div>'+'<button class="btn primary full" id="go">'+(isReq?'Send request':'Claim square')+'</button><div class="note">'+'Claims close permanently when the organizer locks the board.</div>';
+  openSheet(form,function(){var input=el("nm");Array.prototype.forEach.call(document.querySelectorAll("[data-name]"),function(btn){btn.onclick=function(){input.value=btn.getAttribute("data-name");};});el("go").onclick=function(){var name=(input.value||"").trim();if(!name){el("fName").classList.add("err");input.focus();return;}var note="",btn=el("go");btn.disabled=true;btn.textContent="Saving";state.me=name;savePrefs({me:name});claim(k,name,note).then(function(){state.fresh=k;closeSheet();render();if(!isReq)burst(playerColor(name));setTimeout(function(){state.fresh=null;},700);toast(isReq?"Request sent":"Square locked for "+name);}).catch(function(e){btn.disabled=false;btn.textContent=isReq?"Send request":"Claim square";toast(e.message,true);render();});};});
+}
+
+/* ---------------- sheets/admin ---------------- */
+function openSheet(html,onMount){var s=el("sheet");s.scrollTop=0;s.innerHTML='<button class="closebtn" id="sheetClose" aria-label="Close">&times;</button><div class="grab"></div>'+html;el("scrim").classList.add("open");s.classList.add("open");sheetOpen=true;el("sheetClose").onclick=closeSheet;if(onMount)onMount();}
+function closeSheet(){el("sheet").classList.remove("open");el("scrim").classList.remove("open");sheetOpen=false;}
+function toast(msg,bad){var t=el("toast");t.textContent=msg;t.className="toast show"+(bad?" bad":"");clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className="toast"+(bad?" bad":"");},3600);}
+function openPin(after){
+  var b=state.board;if(!b)return;
+  if(Store.mode==="firebase"&&!isFirebaseOwner(b))return openSheet('<div class="sheethead"><h3>Organizer device only</h3><p>This board is protected by Firebase Authentication.</p></div><div class="note">Players can claim squares, but only the anonymous Firebase account that created this board can change teams, points, numbers, or scores. Account-based organizer login can be added with subscriptions later.</div>');
+  openSheet('<div class="sheethead"><h3>Organizer sign in</h3><p>Players never need this PIN.</p></div><div class="field" id="fPin"><label>PIN</label><input id="pinIn" type="tel" inputmode="numeric" maxlength="8" autocomplete="off"><div class="errmsg">Wrong PIN.</div></div><button class="btn primary full" id="pinGo">Sign in</button>',function(){var i=el("pinIn");i.focus();function go(){var btn=el("pinGo");btn.disabled=true;verifyPin(b,i.value.trim()).then(function(ok){if(!ok){el("fPin").classList.add("err");i.value="";i.focus();btn.disabled=false;return;}state.isAdmin=true;var p=prefs(),admins=p.admins||{};admins[b.id]=true;savePrefs({admins:admins});closeSheet();render();toast("Organizer controls unlocked");if(after)setTimeout(after,180);});}el("pinGo").onclick=go;i.addEventListener("keydown",function(e){if(e.key==="Enter")go();});});
+}
+function teamPicker(side,t,editable){var opts='<option value="">Custom team</option>'+NFL.map(function(n,i){return '<option value="'+i+'"'+(n[1]===t.name?' selected':'')+'>'+esc(n[1])+'</option>';}).join("");return '<div class="field"><label>'+(side==="y"?'Rows team':'Columns team')+'</label><div class="pickrow">'+(t.logo?'<img class="picklogo" id="a_'+side+'prev" src="'+esc(t.logo)+'" alt="" onerror="this.remove()">':'')+'<select id="a_'+side+'pick"'+(editable?'':' disabled')+'>'+opts+'</select></div><input type="hidden" id="a_'+side+'logo" value="'+esc(t.logo||'')+'"></div>';}
+function openAdmin(tab){
+  var b=state.board;if(!b)return;
+  if(Store.mode==="firebase"&&!isFirebaseOwner(b))return openPin();
+  if(!state.isAdmin)return openPin(function(){openAdmin(tab);});tab=tab||"setup";
+  var tabs='<div class="tabs"><button data-tab="setup" class="'+(tab==="setup"?'on':'')+'">Board</button><button data-tab="layout" class="'+(tab==="layout"?'on':'')+'">Grid</button><button data-tab="points" class="'+(tab==="points"?'on':'')+'">Points</button><button data-tab="numbers" class="'+(tab==="numbers"?'on':'')+'">Lock & draw</button><button data-tab="scores" class="'+(tab==="scores"?'on':'')+'">Scores</button><button data-tab="sync" class="'+(tab==="sync"?'on':'')+'">Firebase</button></div>';
+  var body="",editable=b.status==="open"&&!trialExpired(b);
+  if(tab==="setup"){
+    body='<div class="field"><label>Board name</label><input id="a_name" value="'+esc(b.name)+'" maxlength="40"'+(editable?'':' disabled')+'></div>'+teamPicker("y",b.teamY,editable)+'<div class="two"><div class="field"><label>Name</label><input id="a_yname" value="'+esc(b.teamY.name)+'" maxlength="28"'+(editable?'':' disabled')+'></div><div class="field"><label>Short</label><input id="a_yshort" value="'+esc(b.teamY.short)+'" maxlength="4"'+(editable?'':' disabled')+'></div></div><div class="field"><label>Color</label><input type="color" id="a_ycolor" value="'+esc(b.teamY.color)+'"'+(editable?'':' disabled')+'></div>'+teamPicker("x",b.teamX,editable)+'<div class="two"><div class="field"><label>Name</label><input id="a_xname" value="'+esc(b.teamX.name)+'" maxlength="28"'+(editable?'':' disabled')+'></div><div class="field"><label>Short</label><input id="a_xshort" value="'+esc(b.teamX.short)+'" maxlength="4"'+(editable?'':' disabled')+'></div></div><div class="field"><label>Color</label><input type="color" id="a_xcolor" value="'+esc(b.teamX.color)+'"'+(editable?'':' disabled')+'></div><div class="field"><label>Claim mode</label><select id="a_mode"'+(editable?'':' disabled')+'><option value="instant"'+(b.mode==="instant"?' selected':'')+'>Instant claim</option><option value="request"'+(b.mode==="request"?' selected':'')+'>Organizer approval</option></select></div><div class="field"><label>Rules</label><textarea id="a_rules" maxlength="800"'+(editable?'':' disabled')+'>'+esc(b.rules)+'</textarea></div><div class="field"><label>Change organizer PIN</label><input id="a_pin" type="tel" inputmode="numeric" maxlength="8" placeholder="Leave blank to keep it"'+(editable?'':' disabled')+'></div>'+(editable?'<button class="btn primary full" id="a_save">Save board</button>':'<div class="note">Board settings freeze when the board locks.</div>')+'<div class="btnrow" style="margin-top:9px"><button class="btn" id="a_export">Export backup</button><button class="btn" id="a_import">Restore backup</button><button class="btn" id="a_new">New board</button></div><input type="file" id="a_file" accept="application/json,.json" style="display:none">'+(editable?'<div class="btnrow" style="margin-top:9px"><button class="btn danger full" id="a_clear">Clear every square</button></div>':'');
+  } else if(tab==="layout"){
+    var nc=cols(b),nr=rows(b),placed=reservedCount(b);body='<div class="note">Choose the size before anyone claims a square. Once a square exists, changing the grid is disabled so no player loses a position.</div><div class="field" style="margin-top:12px"><label>Board size</label>'+GRIDS.map(function(g){var on=g.cols===nc&&g.rows===nr;return '<button class="gridopt'+(on?' on':'')+'" data-grid="'+g.cols+'x'+g.rows+'"'+(!editable||placed?' disabled':'')+'><span class="gt">'+g.label+'</span><span class="gs">'+g.sub+'</span><span class="gnow">'+(on?'now':g.total)+'</span></button>';}).join("")+'</div><div class="field"><label>Team placement</label><div class="swapbox"><span class="swapside" style="background:'+esc(b.teamY.color)+';color:'+inkOn(b.teamY.color)+'">'+esc(b.teamY.short)+' down side</span><span class="swapside" style="background:'+esc(b.teamX.color)+';color:'+inkOn(b.teamX.color)+'">'+esc(b.teamX.short)+' across top</span></div><button class="btn full" id="l_swap" style="margin-top:9px"'+(!editable||placed?' disabled':'')+'>Swap teams</button></div>'+(placed?'<div class="note"><b>'+placed+' squares are reserved.</b> Start a new board to use a different grid size.</div>':'');
+  } else if(tab==="points"){
+    body=b.rewards.map(function(r,i){return '<div class="card" style="margin-bottom:9px"><div class="field"><label>Period</label><input data-r="'+i+'" data-f="label" value="'+esc(r.label)+'" maxlength="22"'+(editable?'':' disabled')+'></div><div class="two"><div class="field"><label>Winner points</label><input data-r="'+i+'" data-f="points" type="number" min="0" value="'+r.points+'"'+(editable?'':' disabled')+'></div><div class="field"><label>Reverse points</label><input data-r="'+i+'" data-f="reverse" type="number" min="0" value="'+r.reverse+'"'+(editable?'':' disabled')+'></div></div></div>';}).join("")+(editable?'<button class="btn primary full" id="r_save">Save point values</button>':'<div class="note">Point values freeze when the board locks.</div>');
+  } else if(tab==="numbers"){
+    var open=totalSquares(b)-reservedCount(b),pend=pendingCount(b),drawn=!!b.digits.x;
+    body='<div class="note"><b>'+statusLabel(b)+'</b><br>'+(b.status==="open"?'You may lock the board even with open squares. Pending requests are removed. Open winning squares earn 0 points.':b.status==="locked"?'Claims are closed. The number draw is now safe.':'Numbers are final and no new claims are possible.')+'</div><div class="btnrow" style="margin-top:12px">'+(b.status==="open"?'<button class="btn primary full" id="n_lock"'+(trialExpired(b)?' disabled':'')+'>Lock board'+(open?' with '+open+' open':'')+'</button>':b.status==="locked"?'<button class="btn primary full" id="n_draw"'+(trialExpired(b)?' disabled':'')+'>Draw numbers</button><button class="btn" id="n_unlock">Reopen before draw</button>':'<button class="btn danger full" id="n_reset"'+(trialExpired(b)?' disabled':'')+'>Reset draw</button>')+'</div>'+(pend?'<div class="note">'+pend+' pending request'+(pend===1?' will':'s will')+' be removed when locking.</div>':'')+(drawn?'<div class="note">Drawn '+new Date(b.digits.drawnAt).toLocaleString()+'. Resetting clears all scores but keeps claims locked.</div>':'');
+  } else if(tab==="scores"){
+    body=PERIODS.map(function(p){var s=b.scores[p.key];return '<div class="card" style="margin-bottom:9px"><div class="field"><label>'+esc(p.label)+'</label><div class="two"><input data-s="'+p.key+'" data-t="y" type="number" min="0" placeholder="'+esc(b.teamY.short)+'" value="'+(s.y==null?'':s.y)+'"><input data-s="'+p.key+'" data-t="x" type="number" min="0" placeholder="'+esc(b.teamX.short)+'" value="'+(s.x==null?'':s.x)+'"></div></div></div>';}).join("")+(b.digits.x&&!trialExpired(b)?'<button class="btn primary full" id="s_save">Save scores</button>':'<div class="note">Draw numbers before entering scores.</div>');
+  } else {
+    body='<div class="note"><b>Firebase Realtime Database + Anonymous Authentication</b><br>Use a dedicated Firebase project. Enable Anonymous sign-in, paste the secure rules below, then connect and upload this board.</div>'+      '<div class="field" style="margin-top:12px"><label>Realtime Database URL</label><input id="fb_url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="'+esc(FB.url)+'" autocapitalize="off" autocorrect="off"></div>'+      '<div class="field"><label>Firebase Web API Key</label><input id="fb_key" placeholder="AIza..." value="'+esc(FB.key)+'" autocapitalize="off" autocorrect="off"><div class="hint">Firebase Console → Project settings → General → Web API Key. The key identifies the project; Security Rules protect the data.</div></div>'+      '<div class="btnrow"><button class="btn" id="fb_test">Test auth & rules</button><button class="btn primary" id="fb_save">Connect & upload</button></div>'+      (fbConfigured()?'<div class="btnrow" style="margin-top:9px"><button class="btn danger full" id="fb_clear">Disconnect this device</button></div>':'')+      '<div class="field" style="margin-top:14px"><label>Firebase Rules</label><textarea id="fb_rules" readonly style="min-height:300px;font-family:var(--font-mono);font-size:11px">'+esc(FB_RULES)+'</textarea><button class="btn sm" id="fb_copy" style="margin-top:7px">Copy secure rules</button><div class="hint">Board controls are owner-only. Claims are atomic, limited to valid open cells, and blocked after the trial or board lock. Trial dates and plan status cannot be changed by the browser.</div></div>';
+  }
+  openSheet('<div class="sheethead"><h3>Organizer</h3><p>'+esc(b.name)+', board '+esc(b.id)+'</p></div>'+tabs+body,function(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-tab]"),function(t){t.onclick=function(){openAdmin(t.getAttribute("data-tab"));};});
+    if(tab==="setup")bindSetup(editable);if(tab==="layout")bindLayout(editable);if(tab==="points")bindRewards(editable);if(tab==="numbers")bindNumbers();if(tab==="scores")bindScores();if(tab==="sync")bindFirebase();
+  });
+}
+function bindPicker(side){var sel=el("a_"+side+"pick");if(!sel||sel.disabled)return;sel.onchange=function(){var v=sel.value,prev=el("a_"+side+"prev");if(v===""){el("a_"+side+"logo").value="";if(prev)prev.remove();return;}var t=NFL[Number(v)],url=logoUrl(t[3]);el("a_"+side+"name").value=t[1];el("a_"+side+"short").value=t[0];el("a_"+side+"color").value=t[2];el("a_"+side+"logo").value=url;if(prev)prev.src=url;};}
+function bindSetup(editable){
+  bindPicker("y");bindPicker("x");
+  if(editable&&el("a_save"))el("a_save").onclick=function(){var v={name:el("a_name").value.trim(),yn:el("a_yname").value.trim(),ys:el("a_yshort").value.trim(),yc:el("a_ycolor").value,ylogo:el("a_ylogo").value,xn:el("a_xname").value.trim(),xs:el("a_xshort").value.trim(),xc:el("a_xcolor").value,xlogo:el("a_xlogo").value,mode:el("a_mode").value,rules:el("a_rules").value,pin:el("a_pin").value.trim()};var prep=Promise.resolve(v);if(v.pin){v.pinSalt=state.board.pinSalt||uid(18);prep=hashPin(v.pin,v.pinSalt).then(function(h){v.pinHash=h;return v;});}prep.then(function(){return mutate(function(b){assertOpen(b);b.name=v.name||b.name;b.teamY.name=v.yn||b.teamY.name;b.teamY.short=(v.ys||b.teamY.short).toUpperCase();b.teamY.color=v.yc;b.teamY.logo=v.ylogo;b.teamX.name=v.xn||b.teamX.name;b.teamX.short=(v.xs||b.teamX.short).toUpperCase();b.teamX.color=v.xc;b.teamX.logo=v.xlogo;b.mode=v.mode;b.rules=v.rules;if(v.pinHash){b.pinSalt=v.pinSalt;b.pinHash=v.pinHash;delete b.pin;}appendAudit(b,"settings","");});}).then(function(){closeSheet();render();toast("Board saved");}).catch(function(e){toast(e.message,true);});};
+  if(el("a_export"))el("a_export").onclick=function(){var data=JSON.stringify(state.board,null,2),blob=new Blob([data],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="slo-points-"+state.board.id+".json";a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);toast("Backup downloaded");};
+  if(el("a_import"))el("a_import").onclick=function(){el("a_file").click();};
+  if(el("a_file"))el("a_file").onchange=function(e){var f=e.target.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){try{var b=migrate(JSON.parse(fr.result));if(!b||!b.id||!b.squares)throw new Error("bad");state.boardId=b.id;saveNewBoard(b).then(function(){setHash(b.id);closeSheet();render();toast("Board restored");}).catch(function(x){toast(x.message,true);});}catch(err){toast("That is not a SLO Points backup.",true);}};fr.readAsText(f);};
+  if(el("a_new"))el("a_new").onclick=function(){if(confirm("Create a new points board? The current board stays saved.")){closeSheet();createBoardFlow();}};
+  if(editable&&el("a_clear"))el("a_clear").onclick=function(){if(!confirm("Clear every square?"))return;mutate(function(b){assertOpen(b);b.squares={};appendAudit(b,"clear","");}).then(function(){closeSheet();render();toast("Board cleared");}).catch(function(e){toast(e.message,true);});};
+}
+function bindLayout(editable){Array.prototype.forEach.call(document.querySelectorAll("[data-grid]"),function(btn){btn.onclick=function(){if(!editable||reservedCount(state.board))return toast("Grid size freezes after the first claim.",true);var p=btn.getAttribute("data-grid").split("x");mutate(function(b){assertOpen(b);if(reservedCount(b))throw new Error("Grid size freezes after the first claim.");b.cols=Number(p[0]);b.rows=Number(p[1]);b.allowedCells=allowedCellsFor(b.cols,b.rows);b.digits={x:null,y:null,drawnAt:null};appendAudit(b,"resize",p.join("x"));}).then(function(){closeSheet();render();toast("Grid updated");}).catch(function(e){toast(e.message,true);});};});if(el("l_swap"))el("l_swap").onclick=function(){if(!editable||reservedCount(state.board))return toast("Team placement freezes after the first claim.",true);if(!confirm("Swap which team appears on the rows and columns?"))return;mutate(function(b){assertOpen(b);if(reservedCount(b))throw new Error("Team placement freezes after the first claim.");var t=b.teamX;b.teamX=b.teamY;b.teamY=t;appendAudit(b,"swap","");}).then(function(){closeSheet();render();toast("Teams swapped");}).catch(function(e){toast(e.message,true);});};}
+function bindRewards(editable){if(editable&&el("r_save"))el("r_save").onclick=function(){var vals=Array.prototype.map.call(document.querySelectorAll("[data-r]"),function(inp){return{i:Number(inp.getAttribute("data-r")),f:inp.getAttribute("data-f"),v:inp.value};});mutate(function(b){assertOpen(b);vals.forEach(function(x){if(!b.rewards[x.i])return;if(x.f==="label")b.rewards[x.i].label=x.v.trim()||b.rewards[x.i].label;else b.rewards[x.i][x.f]=Math.max(0,Number(x.v)||0);});appendAudit(b,"rewards","");}).then(function(){closeSheet();render();toast("Point values saved");}).catch(function(e){toast(e.message,true);});};}
+function bindNumbers(){if(el("n_lock"))el("n_lock").onclick=lockBoard;if(el("n_draw"))el("n_draw").onclick=runDraw;if(el("n_unlock"))el("n_unlock").onclick=unlockBoard;if(el("n_reset"))el("n_reset").onclick=resetDraw;}
+function bindScores(){if(el("s_save"))el("s_save").onclick=function(){var vals=Array.prototype.map.call(document.querySelectorAll("[data-s]"),function(inp){return{k:inp.getAttribute("data-s"),t:inp.getAttribute("data-t"),v:inp.value};});mutate(function(b){assertTrial(b);if(!b.digits.x)throw new Error("Draw numbers first.");vals.forEach(function(x){if(!b.scores[x.k])b.scores[x.k]={x:null,y:null};b.scores[x.k][x.t]=x.v===""?null:Math.max(0,Number(x.v)||0);});if(b.scores.final.x!=null&&b.scores.final.y!=null)b.status="finished";else if(b.status==="finished")b.status="drawn";appendAudit(b,"scores","");}).then(function(){closeSheet();render();toast("Scores saved");}).catch(function(e){toast(e.message,true);});};}
+function bindFirebase(){
+  function copy(){var t=el("fb_rules");t.select();if(navigator.clipboard)navigator.clipboard.writeText(t.value).then(function(){toast("Secure rules copied");});}
+  function values(){return {url:el("fb_url").value.trim().replace(/\/+$/,""),key:el("fb_key").value.trim()};}
+  if(el("fb_copy"))el("fb_copy").onclick=copy;
+  if(el("fb_test"))el("fb_test").onclick=function(){
+    var v=values();if(!v.url||!v.key)return toast("Enter the Database URL and Web API Key first",true);
+    var btn=el("fb_test"),old={url:FB.url,key:FB.key},oldAuth=FBAUTH;btn.disabled=true;btn.textContent="Checking";FB={url:v.url,key:v.key};FBAUTH=null;
+    ensureFirebaseAuth().then(function(){return firebaseFetch(fbPath("boards","__connection_test__"));}).then(function(r){
+      if(r.ok)return toast("Anonymous auth and database reads are working");
+      if(r.status===401||r.status===403)throw new Error("Authentication worked, but Database Rules blocked the read. Paste the rules below.");
+      throw new Error("Firebase returned "+r.status+".");
+    }).catch(function(e){toast(e.message,true);}).finally(function(){FB=old;FBAUTH=oldAuth;btn.disabled=false;btn.textContent="Test auth & rules";});
+  };
+  if(el("fb_save"))el("fb_save").onclick=function(){
+    var v=values();if(!v.url||!v.key)return toast("Enter the Database URL and Web API Key first",true);
+    var local=state.board,oldMode=Store.mode,old={url:FB.url,key:FB.key},oldAuth=FBAUTH,oldOwner=local.ownerUid,btn=el("fb_save");
+    btn.disabled=true;btn.textContent="Authenticating";FB={url:v.url,key:v.key};FBAUTH=null;authPromise=null;Store.mode="firebase";etags={};
+    ensureFirebaseAuth().then(function(a){local.ownerUid=a.uid;btn.textContent="Uploading";return saveNewBoard(local);}).then(function(check){
+      var p=prefs(),admins=p.admins||{};admins[check.id]=true;savePrefs({fb:{url:v.url,key:v.key},lastBoard:check.id,admins:admins});state.isAdmin=true;state.syncErr="";setHash(check.id);closeSheet();render();toast("Firebase connected, secured, and upload verified");
+    }).catch(function(e){local.ownerUid=oldOwner;FB=old;FBAUTH=oldAuth;Store.mode=oldMode;etags={};toast(e.message,true);btn.disabled=false;btn.textContent="Connect & upload";});
+  };
+  if(el("fb_clear"))el("fb_clear").onclick=function(){
+    if(!confirm("Disconnect Firebase on this device? The remote board is not deleted."))return;
+    var copyBoard=state.board;savePrefs({fb:null});FB={url:"",key:""};FBAUTH=null;authPromise=null;etags={};Store.mode=Store.localOk()?"local":"memory";
+    Store.set(copyBoard.id,copyBoard).then(function(){setHash(copyBoard.id);closeSheet();render();toast("Firebase disconnected; a local copy was saved");});
+  };
+}
+
+/* ---------------- sharing/theme/boot ---------------- */
+function doShare(){
+  if(!state.board)return toast("Create a board first",true);var url=shareUrl(state.board.id);
+  if(!url)return openSheet('<div class="sheethead"><h3>Connect Firebase first</h3><p>A local file cannot keep multiple phones synchronized.</p></div><div class="note">Open Organizer → Firebase, connect your Realtime Database, and verify the upload. Then Share will create the live board link.</div>');
+  var text=state.board.name+", "+state.board.teamY.short+" vs "+state.board.teamX.short+". Free points squares — no money. "+(totalSquares(state.board)-reservedCount(state.board))+" open.";
+  if(navigator.share){navigator.share({title:"SLO Points Squares",text:text,url:url}).catch(function(){});return;}
+  if(navigator.clipboard)navigator.clipboard.writeText(text+" "+url).then(function(){toast("Live link copied");}).catch(function(){prompt("Copy this link",url);});else prompt("Copy this link",url);
+}
+function applyTheme(){document.documentElement.setAttribute("data-theme",state.theme);var map={auto:["◐","Auto"],light:["☀","Day"],dark:["☾","Night"]},m=map[state.theme]||map.auto;el("themeIcon").textContent=m[0];el("themeWord").textContent=m[1];el("themeBtn").classList.toggle("on",state.theme!=="auto");}
+function loadBoard(id){
+  state.boardId=id;state.board=null;state.isAdmin=false;render();
+  return Store.get(id).then(function(b){if(!b){toast("No board found for code "+id,true);state.boardId=null;render();return;}state.board=b;touchIndex(b);savePrefs({lastBoard:id});var admins=prefs().admins||{};state.isAdmin=!!admins[id]&&isFirebaseOwner(b);setHash(id);render();}).catch(function(e){toast(e.message,true);state.boardId=null;render();});
+}
+function boot(){
+  var p=prefs(),sm=location.hash.match(/[#&]s=([A-Za-z0-9\-_]+)/),cfg=sm?decodeSync(sm[1]):null;
+  if(cfg){FB={url:cfg.url,key:cfg.key};savePrefs({fb:FB});}else if(p.fb&&p.fb.url&&p.fb.key)FB=p.fb;
+  state.deviceId=p.deviceId||uid(12);if(!p.deviceId)savePrefs({deviceId:state.deviceId});state.me=p.me||"";state.theme=p.theme||"auto";applyTheme();appTrial();
+  try{state.index=JSON.parse(localStorage.getItem(IDX))||[];}catch(e){state.index=[];}
+  Store.init().then(function(){var m=location.hash.match(/b=([a-z0-9]+)/i),id=m?m[1]:(p.lastBoard||null);if(!id){render();return;}return loadBoard(id);}).catch(function(){render();toast("Storage did not start. Changes will not save.",true);});
+  setInterval(function(){if(!document.hidden&&!sheetOpen)pull();},3500);window.addEventListener("focus",pull);document.addEventListener("visibilitychange",function(){if(!document.hidden)pull();});window.addEventListener("hashchange",function(){var m=location.hash.match(/b=([a-z0-9]+)/i);if(m&&m[1]!==state.boardId)loadBoard(m[1]);});
+}
+
+el("scrim").onclick=closeSheet;document.addEventListener("keydown",function(e){if(e.key==="Escape"&&sheetOpen)closeSheet();});
+el("themeBtn").onclick=function(){state.theme=state.theme==="auto"?"light":state.theme==="light"?"dark":"auto";savePrefs({theme:state.theme});applyTheme();};
+el("shareBtn").onclick=doShare;
+el("adminBtn").onclick=function(){if(!state.board)return toast("Create a board first",true);if(state.isAdmin)openAdmin("setup");else openPin(function(){openAdmin("setup");});};
+
+boot();
+})();
+
+
+
+
+</script>
+</body>
+</html>
